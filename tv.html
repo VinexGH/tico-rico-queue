@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tico Rico - Cola de Pedidos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+  body {
+    font-family: 'Comic Neue', cursive;
+    background: #fff8f8;
+    color: #900000;
+    margin: 0;
+    padding: 10px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  h1 {
+    font-size: 3.5em;
+    margin-bottom: 10px;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    width: 90vw;
+  }
+  .columns {
+    display: flex;
+    flex-direction: row; /* Para vertical TV, pero columnas lado a lado */
+    justify-content: space-around;
+    height: 100%;
+  }
+  .column {
+    width: 48%;
+    background: #ffe6e6;
+    border: 3px solid #900000;
+    border-radius: 20px;
+    padding: 15px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  .column h2 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+  .order {
+    background: #ffcccc;
+    border: 2px solid #900000;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    font-size: 2em;
+    text-align: center;
+    box-shadow: 3px 3px 8px rgba(153,0,0,0.5);
+  }
+
+  /* Scrollbar custom */
+  .column::-webkit-scrollbar {
+    width: 10px;
+  }
+  .column::-webkit-scrollbar-thumb {
+    background-color: #900000;
+    border-radius: 5px;
+  }
+  .column::-webkit-scrollbar-track {
+    background: #fff0f0;
+  }
+</style>
+</head>
+<body>
+
+<h1>Tico Rico - Pedidos</h1>
+<div class="container">
+  <div class="columns">
+    <div class="column" id="enProceso">
+      <h2>En proceso</h2>
+    </div>
+    <div class="column" id="listos">
+      <h2>Listos</h2>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'ticoRicoOrders';
+
+  function loadOrders() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  }
+
+  function renderOrders() {
+    const orders = loadOrders();
+
+    const enProcesoDiv = document.getElementById('enProceso');
+    const listosDiv = document.getElementById('listos');
+
+    // Limpiar contenido previo (menos el h2)
+    enProcesoDiv.querySelectorAll('.order').forEach(e => e.remove());
+    listosDiv.querySelectorAll('.order').forEach(e => e.remove());
+
+    orders.forEach(order => {
+      const div = document.createElement('div');
+      div.className = 'order';
+      div.textContent = order.name;
+      if(order.status === 'enProceso') {
+        enProcesoDiv.appendChild(div);
+      } else if(order.status === 'listo') {
+        listosDiv.appendChild(div);
+      }
+    });
+  }
+
+  // Actualizar pantalla cada 2 segundos
+  setInterval(renderOrders, 2000);
+  renderOrders();
+</script>
+
+</body>
+</html>
