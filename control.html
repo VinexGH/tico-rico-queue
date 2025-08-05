@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tico Rico - Panel de Control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+  body {
+    font-family: 'Comic Neue', cursive;
+    background: #fff0f0;
+    color: #900000;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 3em;
+  }
+  input, button {
+    font-family: 'Comic Neue', cursive;
+    font-size: 1.2em;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 12px;
+    border: 2px solid #900000;
+    outline: none;
+  }
+  button {
+    cursor: pointer;
+    background: #ff5555;
+    color: white;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #cc0000;
+  }
+  #orderList {
+    margin-top: 20px;
+    max-width: 400px;
+  }
+  .order {
+    background: #fee;
+    border: 2px solid #900000;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-buttons button {
+    margin-left: 5px;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    border-radius: 8px;
+  }
+  .btn-en-proceso {
+    background: #ffb347;
+    border-color: #cc8400;
+  }
+  .btn-listo {
+    background: #6ab04c;
+    border-color: #407a17;
+  }
+  .btn-eliminar {
+    background: #e74c3c;
+    border-color: #9b2d20;
+  }
+</style>
+</head>
+<body>
+<h1>Tico Rico - Panel de Control</h1>
+
+<label for="orderName">Nombre del pedido:</label><br />
+<input type="text" id="orderName" placeholder="Ej: Orden #1" />
+<button id="addOrderBtn">Agregar Pedido</button>
+
+<div id="orderList"></div>
+
+<script>
+  // Guardar en localStorage bajo esta key
+  const STORAGE_KEY = 'ticoRicoOrders';
+
+  // Cargar órdenes o devolver array vacío
+  function loadOrders() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  }
+
+  // Guardar órdenes
+  function saveOrders(orders) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+  }
+
+  // Renderizar órdenes en panel de control
+  function renderOrders() {
+    const orders = loadOrders();
+    const container = document.getElementById('orderList');
+    container.innerHTML = '';
+
+    if(orders.length === 0) {
+      container.innerHTML = '<p>No hay pedidos.</p>';
+      return;
+    }
+
+    orders.forEach(order => {
+      const div = document.createElement('div');
+      div.className = 'order';
+      div.innerHTML = `
+        <div><strong>${order.name}</strong><br/><small>${order.status === 'listo' ? 'Listo' : 'En proceso'}</small></div>
+        <div class="order-buttons">
+          ${order.status !== 'enProceso' ? `<button class="btn-en-proceso">En proceso</button>` : ''}
+          ${order.status !== 'listo' ? `<button class="btn-listo">Listo</button>` : ''}
+          <button class="btn-eliminar">Eliminar</button>
+        </div>
+      `;
+
+      // Eventos botones
+      const btnEnProceso = div.querySelector('.btn-en-proceso');
+      if(btnEnProceso) btnEnProceso.onclick = () => {
+        updateOrderStatus(order.id, 'enProceso');
+      };
+      const btnListo = div.querySelector('.btn-listo');
+      if(btnListo) btnListo.onclick = () => {
+        updateOrderStatus(order.id, 'listo');
+      };
+      div.querySelector('.btn-eliminar').onclick = () => {
+        deleteOrder(order.id);
+      };
+
+      container.appendChild(div);
+    });
+  }
+
+  // Agregar pedido
+  function addOrder(name) {
+    if (!name.trim()) {
+      alert('Por favor ingresa un nombre para el pedido.');
+      return;
+    }
+    const orders = loadOrders();
+    orders.push({
+      id: Date.now(),
+      name: name.trim(),
+      status: 'enProceso' // nuevo pedido siempre en proceso
+    });
+    saveOrders(orders);
+    renderOrders();
+    document.getElementById('orderName').value = '';
+  }
+
+  // Actualizar estado
+  function updateOrderStatus(id, newStatus) {
+    const orders = loadOrders();
+    const index = orders.findIndex(o => o.id === id);
+    if(index !== -1) {
+      orders[index].status = newStatus;
+      saveOrders(orders);
+      renderOrders();
+    }
+  }
+
+  // Eliminar pedido
+  function deleteOrder(id) {
+    let orders = loadOrders();
+    orders = orders.filter(o => o.id !== id);
+    saveOrders(orders);
+    renderOrders();
+  }
+
+  // Setup
+  document.getElementById('addOrderBtn').onclick = () => {
+    const name = document.getElementById('orderName').value;
+    addOrder(name);
+  };
+
+  renderOrders();
+</script>
+
+</body>
+</html>
