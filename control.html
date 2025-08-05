@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Tico Rico</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: #fff0e6;
+      color: #3e1f0d;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 10px;
+      font-size: 1.1em;
+      border: 2px solid #a0522d;
+    }
+    .pedido {
+      background: #ffe4c4;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pedido span {
+      font-size: 1.2em;
+    }
+    .pedido button {
+      margin-left: 5px;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Panel de Control</h1>
+
+  <input type="text" id="nombrePedido" placeholder="Nombre del pedido">
+  <button onclick="agregarPedido()">Agregar Pedido</button>
+
+  <h2>Colores de Pantalla</h2>
+  <label>Fondo: <input type="color" id="colorFondo" value="#fff8f8"></label>
+  <label>Texto: <input type="color" id="colorTexto" value="#3e1f0d"></label>
+  <label>En Proceso: <input type="color" id="colorProceso" value="#f4a261"></label>
+  <label>Listo: <input type="color" id="colorListo" value="#2a9d8f"></label>
+
+  <h2>Pedidos</h2>
+  <div id="listaPedidos"></div>
+
+  <script>
+    const STORAGE_KEY = "pedidosTicoRico";
+    const COLOR_KEY = "coloresTicoRico";
+
+    function guardar(pedidos) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(pedidos));
+    }
+
+    function cargar() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    }
+
+    function guardarColores() {
+      const colores = {
+        fondo: document.getElementById("colorFondo").value,
+        texto: document.getElementById("colorTexto").value,
+        proceso: document.getElementById("colorProceso").value,
+        listo: document.getElementById("colorListo").value,
+      };
+      localStorage.setItem(COLOR_KEY, JSON.stringify(colores));
+    }
+
+    function agregarPedido() {
+      const nombre = document.getElementById("nombrePedido").value.trim();
+      if (!nombre) return alert("Escribe un nombre.");
+      const pedidos = cargar();
+      pedidos.push({ id: Date.now(), nombre, estado: "proceso" });
+      guardar(pedidos);
+      renderPedidos();
+      document.getElementById("nombrePedido").value = "";
+    }
+
+    function cambiarEstado(id, nuevoEstado) {
+      const pedidos = cargar();
+      const index = pedidos.findIndex(p => p.id === id);
+      if (index !== -1) pedidos[index].estado = nuevoEstado;
+      guardar(pedidos);
+      renderPedidos();
+    }
+
+    function eliminarPedido(id) {
+      const pedidos = cargar().filter(p => p.id !== id);
+      guardar(pedidos);
+      renderPedidos();
+    }
+
+    function renderPedidos() {
+      const pedidos = cargar();
+      const contenedor = document.getElementById("listaPedidos");
+      contenedor.innerHTML = "";
+      pedidos.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "pedido";
+        div.innerHTML = `
+          <span>${p.nombre} (${p.estado})</span>
+          <div>
+            <button onclick="cambiarEstado(${p.id}, 'proceso')">Proceso</button>
+            <button onclick="cambiarEstado(${p.id}, 'listo')">Listo</button>
+            <button onclick="eliminarPedido(${p.id})">X</button>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    document.querySelectorAll("input[type=color]").forEach(input => {
+      input.addEventListener("change", guardarColores);
+    });
+
+    window.onload = () => {
+      const colores = JSON.parse(localStorage.getItem(COLOR_KEY) || "{}");
+      if (colores.fondo) document.getElementById("colorFondo").value = colores.fondo;
+      if (colores.texto) document.getElementById("colorTexto").value = colores.texto;
+      if (colores.proceso) document.getElementById("colorProceso").value = colores.proceso;
+      if (colores.listo) document.getElementById("colorListo").value = colores.listo;
+      renderPedidos();
+    }
+  </script>
+
+</body>
+</html>
