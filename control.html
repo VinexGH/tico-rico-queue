@@ -9,132 +9,204 @@
 
   body {
     font-family: 'Comic Neue', cursive;
-    background: #fff0f0;
-    color: #900000;
+    background: #fff8f0;
+    color: #4b2e05;
     padding: 20px;
+    max-width: 500px;
+    margin: auto;
   }
   h1 {
     text-align: center;
     font-size: 3em;
+    margin-bottom: 10px;
+    color: #6f4e37; /* coffee brown */
   }
-  input, button {
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: 700;
+  }
+  input[type="text"], input[type="color"] {
+    width: 100%;
     font-family: 'Comic Neue', cursive;
-    font-size: 1.2em;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 12px;
-    border: 2px solid #900000;
+    font-size: 1.1em;
+    padding: 8px;
+    border-radius: 15px;
+    border: 2px solid #6f4e37;
     outline: none;
+    box-sizing: border-box;
   }
   button {
-    cursor: pointer;
-    background: #ff5555;
+    width: 100%;
+    margin-top: 15px;
+    background: #6f4e37;
     color: white;
+    font-family: 'Comic Neue', cursive;
+    font-size: 1.3em;
+    padding: 12px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
     transition: background 0.3s ease;
   }
   button:hover {
-    background: #cc0000;
+    background: #4b2e05;
   }
   #orderList {
-    margin-top: 20px;
-    max-width: 400px;
+    margin-top: 25px;
+    max-height: 350px;
+    overflow-y: auto;
+    border: 2px solid #6f4e37;
+    border-radius: 25px;
+    padding: 10px;
+    background: #f5e6d3;
   }
   .order {
-    background: #fee;
-    border: 2px solid #900000;
-    margin-bottom: 8px;
-    padding: 10px;
-    border-radius: 15px;
+    background: #d6b98f;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    padding: 15px 20px;
+    font-size: 1.6em;
+    font-weight: 700;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 2px 2px 6px rgba(101, 67, 33, 0.5);
+  }
+  .order.enProceso {
+    background: var(--color-enproceso);
+  }
+  .order.listo {
+    background: var(--color-listo);
+  }
+  .order-text {
+    flex-grow: 1;
+    color: var(--color-texto);
   }
   .order-buttons button {
-    margin-left: 5px;
-    padding: 5px 10px;
-    font-size: 0.9em;
-    border-radius: 8px;
+    margin-left: 8px;
+    padding: 6px 12px;
+    font-size: 1em;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
   }
   .btn-en-proceso {
-    background: #ffb347;
-    border-color: #cc8400;
+    background: #f0ad4e;
+    color: #5a3e1b;
+  }
+  .btn-en-proceso:hover {
+    background: #d18d1f;
   }
   .btn-listo {
-    background: #6ab04c;
-    border-color: #407a17;
+    background: #5cb85c;
+    color: white;
+  }
+  .btn-listo:hover {
+    background: #3e7d3e;
   }
   .btn-eliminar {
-    background: #e74c3c;
-    border-color: #9b2d20;
+    background: #d9534f;
+    color: white;
+  }
+  .btn-eliminar:hover {
+    background: #b52b27;
   }
 </style>
 </head>
 <body>
+
 <h1>Tico Rico - Panel de Control</h1>
 
-<label for="orderName">Nombre del pedido:</label><br />
-<input type="text" id="orderName" placeholder="Ej: Orden #1" />
+<label for="orderName">Nombre del pedido:</label>
+<input type="text" id="orderName" placeholder="Ej: Cappuccino #5" />
 <button id="addOrderBtn">Agregar Pedido</button>
+
+<hr />
+
+<h2>Configuración de colores</h2>
+
+<label for="colorFondo">Color fondo pantalla TV:</label>
+<input type="color" id="colorFondo" value="#fff8f8" />
+
+<label for="colorEnProceso">Color pedidos en proceso:</label>
+<input type="color" id="colorEnProceso" value="#f0ad4e" />
+
+<label for="colorListo">Color pedidos listos:</label>
+<input type="color" id="colorListo" value="#5cb85c" />
+
+<label for="colorTexto">Color texto de pedidos:</label>
+<input type="color" id="colorTexto" value="#4b2e05" />
 
 <div id="orderList"></div>
 
 <script>
-  // Guardar en localStorage bajo esta key
   const STORAGE_KEY = 'ticoRicoOrders';
+  const COLOR_KEY = 'ticoRicoColors';
 
-  // Cargar órdenes o devolver array vacío
+  // Cargar pedidos
   function loadOrders() {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
   }
-
-  // Guardar órdenes
+  // Guardar pedidos
   function saveOrders(orders) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
   }
+  // Cargar colores
+  function loadColors() {
+    return JSON.parse(localStorage.getItem(COLOR_KEY) || '{}');
+  }
+  // Guardar colores
+  function saveColors(colors) {
+    localStorage.setItem(COLOR_KEY, JSON.stringify(colors));
+  }
 
-  // Renderizar órdenes en panel de control
+  // Actualizar CSS variables con colores guardados o defaults
+  function updateCSSColors() {
+    const colors = loadColors();
+    document.documentElement.style.setProperty('--color-fondo', colors.fondo || '#fff8f8');
+    document.documentElement.style.setProperty('--color-enproceso', colors.enProceso || '#f0ad4e');
+    document.documentElement.style.setProperty('--color-listo', colors.listo || '#5cb85c');
+    document.documentElement.style.setProperty('--color-texto', colors.texto || '#4b2e05');
+  }
+
+  // Renderizar pedidos
   function renderOrders() {
     const orders = loadOrders();
     const container = document.getElementById('orderList');
     container.innerHTML = '';
-
     if(orders.length === 0) {
-      container.innerHTML = '<p>No hay pedidos.</p>';
+      container.innerHTML = '<p style="font-size:1.4em; color:#a36f00; text-align:center;">No hay pedidos aún</p>';
       return;
     }
-
     orders.forEach(order => {
       const div = document.createElement('div');
-      div.className = 'order';
+      div.className = 'order ' + (order.status === 'listo' ? 'listo' : 'enProceso');
       div.innerHTML = `
-        <div><strong>${order.name}</strong><br/><small>${order.status === 'listo' ? 'Listo' : 'En proceso'}</small></div>
+        <div class="order-text">${order.name}</div>
         <div class="order-buttons">
-          ${order.status !== 'enProceso' ? `<button class="btn-en-proceso">En proceso</button>` : ''}
-          ${order.status !== 'listo' ? `<button class="btn-listo">Listo</button>` : ''}
+          ${order.status !== 'enProceso' ? '<button class="btn-en-proceso">En proceso</button>' : ''}
+          ${order.status !== 'listo' ? '<button class="btn-listo">Listo</button>' : ''}
           <button class="btn-eliminar">Eliminar</button>
         </div>
       `;
-
       // Eventos botones
       const btnEnProceso = div.querySelector('.btn-en-proceso');
-      if(btnEnProceso) btnEnProceso.onclick = () => {
-        updateOrderStatus(order.id, 'enProceso');
-      };
+      if(btnEnProceso) btnEnProceso.onclick = () => updateOrderStatus(order.id, 'enProceso');
+
       const btnListo = div.querySelector('.btn-listo');
-      if(btnListo) btnListo.onclick = () => {
-        updateOrderStatus(order.id, 'listo');
-      };
-      div.querySelector('.btn-eliminar').onclick = () => {
-        deleteOrder(order.id);
-      };
+      if(btnListo) btnListo.onclick = () => updateOrderStatus(order.id, 'listo');
+
+      div.querySelector('.btn-eliminar').onclick = () => deleteOrder(order.id);
 
       container.appendChild(div);
     });
   }
 
-  // Agregar pedido
   function addOrder(name) {
-    if (!name.trim()) {
+    if(!name.trim()) {
       alert('Por favor ingresa un nombre para el pedido.');
       return;
     }
@@ -142,25 +214,23 @@
     orders.push({
       id: Date.now(),
       name: name.trim(),
-      status: 'enProceso' // nuevo pedido siempre en proceso
+      status: 'enProceso'
     });
     saveOrders(orders);
     renderOrders();
     document.getElementById('orderName').value = '';
   }
 
-  // Actualizar estado
   function updateOrderStatus(id, newStatus) {
     const orders = loadOrders();
-    const index = orders.findIndex(o => o.id === id);
-    if(index !== -1) {
-      orders[index].status = newStatus;
+    const idx = orders.findIndex(o => o.id === id);
+    if(idx !== -1) {
+      orders[idx].status = newStatus;
       saveOrders(orders);
       renderOrders();
     }
   }
 
-  // Eliminar pedido
   function deleteOrder(id) {
     let orders = loadOrders();
     orders = orders.filter(o => o.id !== id);
@@ -168,14 +238,35 @@
     renderOrders();
   }
 
-  // Setup
+  // Eventos agregar pedido
   document.getElementById('addOrderBtn').onclick = () => {
     const name = document.getElementById('orderName').value;
     addOrder(name);
   };
 
-  renderOrders();
-</script>
+  // Eventos colores
+  const colorFondo = document.getElementById('colorFondo');
+  const colorEnProceso = document.getElementById('colorEnProceso');
+  const colorListo = document.getElementById('colorListo');
+  const colorTexto = document.getElementById('colorTexto');
 
-</body>
-</html>
+  // Cargar colores en inputs
+  const savedColors = loadColors();
+  if(savedColors.fondo) colorFondo.value = savedColors.fondo;
+  if(savedColors.enProceso) colorEnProceso.value = savedColors.enProceso;
+  if(savedColors.listo) colorListo.value = savedColors.listo;
+  if(savedColors.texto) colorTexto.value = savedColors.texto;
+
+  function saveAndApplyColors() {
+    const colors = {
+      fondo: colorFondo.value,
+      enProceso: colorEnProceso.value,
+      listo: colorListo.value,
+      texto: colorTexto.value
+    };
+    saveColors(colors);
+    updateCSSColors();
+  }
+
+  colorFondo.oninput = saveAndApplyColors;
+  colorEnProceso.oninput = saveAndApply
