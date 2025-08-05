@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tico Rico - Pantalla</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: var(--fondo, #fff8f8);
+      color: var(--texto, #3e1f0d);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      font-size: 3em;
+    }
+    .columnas {
+      display: flex;
+      flex: 1;
+      gap: 10px;
+    }
+    .columna {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      overflow-y: auto;
+    }
+    .pedido {
+      background: #ddd;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 15px;
+      font-size: 2em;
+      text-align: center;
+      color: var(--texto, #3e1f0d);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tico Rico</h1>
+  <div class="columnas">
+    <div class="columna" id="proceso"><h2>En Proceso</h2></div>
+    <div class="columna" id="listo"><h2>Listos</h2></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "pedidosTicoRico";
+    const COLOR_KEY = "coloresTicoRico";
+
+    function cargarPedidos() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    }
+
+    function aplicarColores() {
+      const colores = JSON.parse(localStorage.getItem(COLOR_KEY) || "{}");
+      if (colores.fondo) document.body.style.setProperty("--fondo", colores.fondo);
+      if (colores.texto) document.body.style.setProperty("--texto", colores.texto);
+      if (colores.proceso) document.getElementById("proceso").style.background = colores.proceso;
+      if (colores.listo) document.getElementById("listo").style.background = colores.listo;
+    }
+
+    function render() {
+      aplicarColores();
+      const pedidos = cargarPedidos();
+      const divProceso = document.getElementById("proceso");
+      const divListo = document.getElementById("listo");
+
+      divProceso.innerHTML = "<h2>En Proceso</h2>";
+      divListo.innerHTML = "<h2>Listos</h2>";
+
+      pedidos.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "pedido";
+        div.textContent = p.nombre;
+        if (p.estado === "proceso") divProceso.appendChild(div);
+        else if (p.estado === "listo") divListo.appendChild(div);
+      });
+    }
+
+    setInterval(render, 1000);
+    render();
+  </script>
+
+</body>
+</html>
